@@ -4,3 +4,7 @@ branches:
   develop:
     increment: Minor
     tag: preview
+  cake-workshop:
+    regex: cake\-workshop 
+    increment: Major
+    tag: boulder
