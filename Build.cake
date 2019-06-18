@@ -20,6 +20,7 @@ const string kuduDeployTaskName = "deploy_kudu";
 const string setBuildNumberTaskName = "set-build-number";
 const string buildCITaskName = "build-CI";
 const string publishBuildArtifactTaskName = "publish-build-artifact";
+const string publishTestResultsTaskName = "publish-test-results";
 
 const string packageName = "Linker-1";
 
@@ -193,7 +194,7 @@ Task(setBuildNumberTaskName)
 
 });
 
-Task("publish-test-results")
+Task(publishTestResultsTaskName)
     .WithCriteria(BuildSystem.IsRunningOnAzurePipelinesHosted)
     .IsDependentOn(testTaskName)
     .Does(() =>
@@ -214,9 +215,11 @@ Task(buildCITaskName)
     .IsDependentOn(versionTaskName)
     .IsDependentOn(packageZipTaskName)
     .IsDependentOn(setBuildNumberTaskName)
-    .IsDependentOn(publishBuildArtifactTaskName);
+    .IsDependentOn(publishBuildArtifactTaskName)
+    .IsDependentOn(publishTestResultsTaskName);
+    
 
-Task("publish-build-artifact")
+Task(publishBuildArtifactTaskName)
     .WithCriteria(() => BuildSystem.IsRunningOnAzurePipelinesHosted)
     .IsDependentOn(packageZipTaskName)
     .Does<PackageMetadata>(package =>
