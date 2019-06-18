@@ -158,7 +158,6 @@ Task("deploy-octo")
         package.FullPath, new OctopusPushSettings
         {
             EnableServiceMessages = true,
-            Space = "Linker-1",
             ReplaceExisting = true //only development
         });
 
@@ -170,7 +169,7 @@ Task("deploy-octo")
             ApiKey = EnvironmentVariable("OctopusApiKey"),
             ReleaseNumber = package.Version,
             DefaultPackageVersion = package.Version,
-            DeployTo = "Production",
+            DeployTo = "Test",
             IgnoreExisting = true,
             DeploymentProgress = true,
             WaitForDeployment = true
