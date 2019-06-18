@@ -6,6 +6,5 @@ public static class Paths
 
     public static DirectoryPath FrondEndDirectory => "src/Linker";
     public static DirectoryPath PublishDirectory => "publish";
-
-
+    public static DirectoryPath TestResultsDirectory => "testResults";
 }

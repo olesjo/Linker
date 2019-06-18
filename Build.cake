@@ -15,10 +15,11 @@ const string testTaskName = "Test";
 const string versionTaskName = "Version";
 const string buildFrontEndTaskName = "Build-frontend";
 const string packageZipTaskName = "Package-zip";
-
 const string octoPackTaskName = "package-octo";
-
 const string kuduDeployTaskName = "deploy_kudu";
+const string setBuildNumberTaskName = "set-build-number";
+const string buildCITaskName = "build-CI";
+const string publishBuildArtifactTaskName = "publish-build-artifact";
 
 const string packageName = "Linker-1";
 
@@ -43,7 +44,12 @@ Task(testTaskName)
     .IsDependentOn(compileTaskName)
     .Does(() =>
 {
-    DotNetCoreTest(Paths.SolutionFile.FullPath);
+    DotNetCoreTest(Paths.SolutionFile.FullPath,
+    new DotNetCoreTestSettings
+    {
+        Logger = "trx",
+        ResultsDirectory = Paths.TestResultsDirectory
+    });
 });
 
 
@@ -176,5 +182,48 @@ Task("deploy-octo")
         });
 });
 
+
+Task(setBuildNumberTaskName)
+    .WithCriteria(() => BuildSystem.IsRunningOnAzurePipelinesHosted)
+    .Does<PackageMetadata>(package =>
+{
+    var buildNumber = TFBuild.Environment.Build.Number;
+    TFBuild.Commands.UpdateBuildNumber($"{package.Version}+{buildNumber}");
+
+
+});
+
+Task("publish-test-results")
+    .WithCriteria(BuildSystem.IsRunningOnAzurePipelinesHosted)
+    .IsDependentOn(testTaskName)
+    .Does(() =>
+{
+    TFBuild.Commands.PublishTestResults(
+        new TFBuildPublishTestResultsData    
+        {
+            TestRunner = TFTestRunnerType.VSTest,
+            TestResultsFiles = GetFiles(Paths.TestResultsDirectory + "/*.trx").ToList()
+        });
+    
+});
+
+Task(buildCITaskName)
+    .IsDependentOn(compileTaskName)
+    .IsDependentOn(testTaskName)
+    .IsDependentOn(buildFrontEndTaskName)
+    .IsDependentOn(versionTaskName)
+    .IsDependentOn(packageZipTaskName)
+    .IsDependentOn(setBuildNumberTaskName)
+    .IsDependentOn(publishBuildArtifactTaskName);
+
+Task("publish-build-artifact")
+    .WithCriteria(() => BuildSystem.IsRunningOnAzurePipelinesHosted)
+    .IsDependentOn(packageZipTaskName)
+    .Does<PackageMetadata>(package =>
+{
+    TFBuild.Commands.UploadArtifactDirectory(package.OutputDirectory);
+
+    //foreach(var p in GetFiles(package.OutputDirectory + $"/*.{package.Extension}"))
+});
 
 RunTarget(target);
