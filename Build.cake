@@ -154,10 +154,11 @@ Task("deploy-octo")
     .Does<PackageMetadata>(package =>
 {
     OctoPush(Urls.OctopusServerUrl.AbsoluteUri,
-        EnvironmentVariable("OctopusApiKey"),
+        EnvironmentVariable("OctopusApiKey"),        
         package.FullPath, new OctopusPushSettings
         {
             EnableServiceMessages = true,
+            Space = "Linker-1",
             ReplaceExisting = true //only development
         });
 
@@ -169,7 +170,7 @@ Task("deploy-octo")
             ApiKey = EnvironmentVariable("OctopusApiKey"),
             ReleaseNumber = package.Version,
             DefaultPackageVersion = package.Version,
-            DeployTo = "Test",
+            DeployTo = "Production",
             IgnoreExisting = true,
             DeploymentProgress = true,
             WaitForDeployment = true
