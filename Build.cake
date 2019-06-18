@@ -20,13 +20,15 @@ const string octoPackTaskName = "package-octo";
 
 const string kuduDeployTaskName = "deploy_kudu";
 
+const string packageName = "Linker-1";
+
 var target = Argument("target", compileTaskName);
 
 Setup<PackageMetadata>(context =>
 {
     return new PackageMetadata(
         outputDirectory:Argument("packageOutputDirectory", "packages"),
-        name:"Linker-1");
+        name:packageName);
     
 });
 
@@ -160,7 +162,7 @@ Task("deploy-octo")
         });
 
     OctoCreateRelease(
-        "LinkerRelease",
+        packageName,
         new CreateReleaseSettings
         {
             Server = Urls.OctopusServerUrl.AbsoluteUri,
